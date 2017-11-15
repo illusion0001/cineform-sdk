@@ -22,6 +22,8 @@
 #ifndef CFHD_SAMPLE_HEADER_H
 #define CFHD_SAMPLE_HEADER_H
 
+#include "color.h"
+
 /*!
 	@brief Information obtained by parsing the sample header
 
@@ -35,6 +37,7 @@ public:
 
 	CFHD_SampleHeader() :
 		m_encodedFormat(CFHD_ENCODED_FORMAT_YUV_422),
+		m_inputFormat(COLOR_FORMAT_UNKNOWN),
 		m_fieldType(CFHD_FIELD_TYPE_UNKNOWN),
 		m_width(0),
 		m_height(0)
@@ -50,6 +53,18 @@ public:
 	CFHD_Error GetEncodedFormat(CFHD_EncodedFormat *encodedFormatOut)
 	{
 		*encodedFormatOut = m_encodedFormat;
+		return CFHD_ERROR_OKAY;
+	}
+
+	CFHD_Error SetInputFormat(COLOR_FORMAT inputFormat)
+	{
+		m_inputFormat = inputFormat;
+		return CFHD_ERROR_OKAY;
+	}
+
+	CFHD_Error GetInputFormat(COLOR_FORMAT *inputFormatOut)
+	{
+		*inputFormatOut = m_inputFormat;
 		return CFHD_ERROR_OKAY;
 	}
 
@@ -81,6 +96,7 @@ public:
 
 private:
 	CFHD_EncodedFormat m_encodedFormat;
+	COLOR_FORMAT m_inputFormat;
 	CFHD_FieldType m_fieldType;
 	int m_width;
 	int m_height;
