@@ -85,12 +85,16 @@
 
 #include "cpuid.h"
 
+#if 0
+
 int GetProcessorCount()
 {
 	SYSTEM_INFO cSystem_info;
 	GetSystemInfo(&cSystem_info);
 	return cSystem_info.dwNumberOfProcessors;
 }
+
+#endif
 
 #elif __APPLE__
 
