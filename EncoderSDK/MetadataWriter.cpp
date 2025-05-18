@@ -110,7 +110,7 @@ uint32_t ValidateLookGenCRCEnc(char* path)
 	int crc = 0;
 	FILE *fp;
 	int err = 0;
-#ifdef _WINDOWS
+#ifdef CRT_S
 	err = fopen_s(&fp, path, "r");
 #else
 	fp = fopen(path, "r");
@@ -195,13 +195,12 @@ uint32_t ValidateLookGenCRCEnc(char* path)
 #endif
 							return 0;
 						}
-						iLUT = (unsigned char *)malloc(size*size*size*sizeof(unsigned char)*3);
+						iLUT = (unsigned char *)malloc(size*size*size*sizeof(char)*3);
 						if(iLUT == NULL)
 						{
 #if (OUTPUT && _WINDOWS)
 							OutputDebugString("no memory\n");
 #endif
-							free(LUT);
 							return 0;
 						}
 					
@@ -267,7 +266,7 @@ uint32_t ValidateLookGenCRCEnc(char* path)
 						hexstring[7] = buf[pos+1];
 
 						//printf("%s",hexstring);
-#ifdef _WINDOWS
+#ifdef CRT_S
 						sscanf_s(hexstring, "%08x", (int *)&val);
 #else
 						sscanf(hexstring, "%08x", (int *)&val);
@@ -316,8 +315,8 @@ uint32_t ValidateLookGenCRCEnc(char* path)
 			//GenerateLUTfile(crc, LUT, size, fullpath);
 		}
 
-        free(LUT);
-        free(iLUT);
+		if(LUT) 
+			free(LUT), LUT=NULL;
 	}
 	return crc;
 }
@@ -366,8 +365,13 @@ CFHD_Error CSampleEncodeMetadata::AddLookFile(METADATA_TYPE ctype,
 		char fname[_MAX_FNAME];
 		char ext[_MAX_EXT];
 
+#ifdef CRT_S
 		_splitpath_s((char *)data, drive, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, ext, _MAX_EXT);
 		_makepath_s(filename, sizeof(filename), NULL, NULL, fname, ext);
+#else
+		_splitpath((char *)data, drive, dir, fname, ext);
+		_makepath(filename, NULL, NULL, fname, ext);
+#endif
 		filenamelen = strlen(filename);
 
 #elif __APPLE_REMOVE__

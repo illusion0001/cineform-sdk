@@ -66,11 +66,11 @@
 #include "threaded.h"
 #endif
 
-#if __APPLE__
-#include "macdefs.h"
-#endif
+#ifdef _WINDOWS 
 
-#if !defined(_WINDOWS)
+#elif __APPLE__
+#include "macdefs.h"
+#else
 #define min(x,y)	(((x) < (y)) ? (x) : (y))
 #define max(x,y)	(((x) > (y)) ? (x) : (y))
 #endif
@@ -1332,7 +1332,7 @@ void PrintEncodingParameters(ENCODING_PARAMETERS *parameters)
 	int err = 0;
 	FILE *file;
 
-#ifdef _WINDOWS
+#ifdef CRT_S
 	err = fopen_s(&file, "parameters.log", "w+");
 #else
 	file = fopen("parameters.log", "w+");
@@ -1598,7 +1598,7 @@ bool InitializeEncoderWithParameters(ENCODER *encoder, TRANSFORM *transform[], i
 #endif
 
 	// Check that the frame dimensions are appropriate for the transform
-	assert(IsFrameTransformable(chroma_width, height, transform_type, num_spatial));
+	if(!IsFrameTransformable(chroma_width, height, transform_type, num_spatial)) return false;
 
 	// Should return an error if the frame size is not apppropriate
 	// but have never encountered this situation in testing so far
@@ -8823,7 +8823,7 @@ void OverrideEncoderSettings(ENCODER *encoder)
 
 			if(type == 0) // preset_default an colr file for all clips.
 			{
-#ifdef _WINDOWS
+#ifdef CRT_S
 				sprintf_s(filenameGUID, sizeof(filenameGUID), "%s/%s/defaults.colr", encoder->LUTsPathStr, encoder->UserDBPathStr);
 #else
 				sprintf(filenameGUID, "%s/%s/defaults.colr", encoder->LUTsPathStr, encoder->UserDBPathStr);
@@ -8834,7 +8834,7 @@ void OverrideEncoderSettings(ENCODER *encoder)
 			}
 			else if(type == 1) // preset_override an colr file for all clips.
 			{
-#ifdef _WINDOWS
+#ifdef CRT_S
 				sprintf_s(filenameGUID, sizeof(filenameGUID), "%s/override.colr", encoder->OverridePathStr);
 #else
 				sprintf(filenameGUID, "%s/override.colr", encoder->OverridePathStr);
@@ -8850,7 +8850,7 @@ void OverrideEncoderSettings(ENCODER *encoder)
 				int err = 0;
 				FILE *fp;
 
-#ifdef _WINDOWS
+#ifdef CRT_S
 				err = fopen_s(&fp, filenameGUID, "rb");
 #else
 				fp = fopen(filenameGUID, "rb");
@@ -8865,7 +8865,7 @@ void OverrideEncoderSettings(ENCODER *encoder)
 					if(len <= MAX_ENCODE_DATADASE_LENGTH)
 					{
 						fseek (fp, 0, SEEK_SET);
-#ifdef _WINDOWS
+#ifdef CRT_S
 						len = (int)fread_s(buffer, MAX_ENCODE_DATADASE_LENGTH, 1, len, fp);
 #else
 						len = (int)fread(buffer,1,len,fp);

@@ -683,15 +683,12 @@ CFHD_GetImageSize(uint32_t imageWidth, uint32_t imageHeight, CFHD_PixelFormat pi
 	return CFHD_ERROR_INVALID_ARGUMENT;
 }
 
-CFHDDECODER_API CFHD_Error
-CFHD_GetColorFlags(CFHD_DecoderRef decoderRef, int* flagsOut)
+int CFHD_get_decoder_color_flags(CFHD_DecoderRef decoderRef)
 {
-	if (flagsOut)
-	{
-		CSampleDecoder *decoder = (CSampleDecoder *)decoderRef;
-		return decoder->GetColorFlags(*flagsOut);
-	}
-	return CFHD_ERROR_INVALID_ARGUMENT;
+	CSampleDecoder *decoder = (CSampleDecoder *)decoderRef;
+  int flags;
+  decoder->GetColorFlags(flags);
+  return flags;
 }
 
 /*!
@@ -1391,7 +1388,7 @@ CFHD_SetActiveMetadata(	CFHD_DecoderRef decoderRef,
 			
 //DANREMOVE			crc = ValidateLookGenCRC((char *)data);
 
-#ifdef _WINDOWS
+#ifdef CRT_S
 			strcpy_s(lastpath, sizeof(lastpath), (char *)data);
 			_splitpath_s((char *)data, drive, sizeof(drive), dir, sizeof(dir), fname, sizeof(fname), ext, sizeof(ext));
 			_makepath_s(filename, sizeof(filename), NULL, NULL, fname, ext);
@@ -1407,7 +1404,7 @@ CFHD_SetActiveMetadata(	CFHD_DecoderRef decoderRef,
 				typesizebytes = ('c'<<24)|39;
 				metadata->AddMetaData(TAG_LOOK_FILE, typesizebytes, (void *)&filename[0]);
 
-#ifdef _WINDOWS
+#ifdef CRT_S
 				strcpy_s(lastLUTfilename, sizeof(lastLUTfilename), filename); 
 #else
 				strcpy(lastLUTfilename, filename);

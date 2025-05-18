@@ -28,6 +28,7 @@
 #ifdef _WINDOWS
 // Must include the following file for Visual Studio 2005 (not required for Visual Studio 2003)
 //#include <atlbase.h>
+#include <errno.h>
 #else
 #include <errno.h>
 #endif
@@ -477,11 +478,11 @@ void InitLUTPaths(DECODER *decoder)
 {
 	if(decoder)
 	{
-#ifdef _WINDOWS
+#if _WINDOWS
 		USES_CONVERSION;
 
-		TCHAR defaultLUTpath[260] = "C:\\Program Files\\Common Files\\CineForm\\LUTs";
-		TCHAR defaultOverridePath[260] = "";
+		TCHAR defaultLUTpath[260] = "?";
+		TCHAR defaultOverridePath[260] = "?";
 		char DbNameStr[64] = "db";
 
 		CSettings cfg;
@@ -494,8 +495,8 @@ void InitLUTPaths(DECODER *decoder)
 
 			CComBSTR path(cfg.GetString(_T("DBPath"), _T("db")));
 			pDBPathStr = OLE2T(path);
-			//strcpy(DbNameStr, pDBPathStr);
-			strcpy_s(DbNameStr, sizeof(DbNameStr), pDBPathStr);
+			strcpy(DbNameStr, pDBPathStr);
+			//strcpy_s(DbNameStr, sizeof(DbNameStr), pDBPathStr);
 
 			CComBSTR path2(cfg.GetString(_T("LUTPath"), _T("NONE")));
 			pLUTPathStr = OLE2T(path2);
@@ -512,8 +513,10 @@ void InitLUTPaths(DECODER *decoder)
 
 				if(n = GetEnvironmentVariable("PUBLIC",PublicPath,79)) // Vista and Win7
 				{
-					_stprintf_s(defaultLUTpath, sizeof(defaultLUTpath), _T("%s\\%s"), PublicPath, _T("CineForm\\LUTs")); //Vista & 7 default
-					_stprintf_s(defaultOverridePath, sizeof(defaultOverridePath), _T("%s\\%s"), PublicPath, _T("CineForm\\LUTs")); //Vista & 7 default
+					_stprintf(defaultLUTpath, _T("%s\\%s"), PublicPath, _T("CineForm\\LUTs")); //Vista & 7 default
+					_stprintf(defaultOverridePath, _T("%s\\%s"), PublicPath, _T("CineForm\\LUTs")); //Vista & 7 default
+					//_stprintf_s(defaultLUTpath, sizeof(defaultLUTpath), _T("%s\\%s"), PublicPath, _T("CineForm\\LUTs")); //Vista & 7 default
+					//_stprintf_s(defaultOverridePath, sizeof(defaultOverridePath), _T("%s\\%s"), PublicPath, _T("CineForm\\LUTs")); //Vista & 7 default
 				}
 				else
 				{
@@ -523,11 +526,13 @@ void InitLUTPaths(DECODER *decoder)
 						LPCTSTR pCommonPathStr = OLE2T(commonpath);
 						if(0 == strcmp(pCommonPathStr, "NONE"))
 						{
-							commonpath = cfg.GetString(_T("CommonFilesDir"), _T("C:\\Program Files\\Common Files"));
+							commonpath = cfg.GetString(_T("CommonFilesDir"), _T("?"));
 							pCommonPathStr = OLE2T(commonpath);
 						}
-						_stprintf_s(defaultLUTpath, sizeof(defaultLUTpath), _T("%s\\%s"), pCommonPathStr, _T("CineForm\\LUTs"));
-						_stprintf_s(defaultOverridePath, sizeof(defaultOverridePath), _T("%s\\%s"), pCommonPathStr, _T("CineForm\\LUTs"));
+						_stprintf(defaultLUTpath, _T("%s\\%s"), pCommonPathStr, _T("CineForm\\LUTs"));
+						_stprintf(defaultOverridePath, _T("%s\\%s"), pCommonPathStr, _T("CineForm\\LUTs"));
+						//_stprintf_s(defaultLUTpath, sizeof(defaultLUTpath), _T("%s\\%s"), pCommonPathStr, _T("CineForm\\LUTs"));
+						//_stprintf_s(defaultOverridePath, sizeof(defaultOverridePath), _T("%s\\%s"), pCommonPathStr, _T("CineForm\\LUTs"));
 
 						cfg.Close();
 					}
@@ -535,20 +540,20 @@ void InitLUTPaths(DECODER *decoder)
 			}
 			else
 			{
-				//strcpy(defaultLUTpath, pLUTPathStr);
-				strcpy_s(defaultLUTpath, sizeof(defaultLUTpath), pLUTPathStr);
-				//strcpy(defaultOverridePath, pOverridePathStr);
-				strcpy_s(defaultOverridePath, sizeof(defaultOverridePath), pOverridePathStr);
+				strcpy(defaultLUTpath, pLUTPathStr);
+				//strcpy_s(defaultLUTpath, sizeof(defaultLUTpath), pLUTPathStr);
+				strcpy(defaultOverridePath, pOverridePathStr);
+				//strcpy_s(defaultOverridePath, sizeof(defaultOverridePath), pOverridePathStr);
 			}
 		}
 
 
-		//strncpy(decoder->OverridePathStr, defaultOverridePath, sizeof(decoder->OverridePathStr));
-		//strncpy(decoder->LUTsPathStr, defaultLUTpath, sizeof(decoder->LUTsPathStr));
-		//strncpy(decoder->UserDBPathStr, DbNameStr, sizeof(decoder->UserDBPathStr));
-		strncpy_s(decoder->OverridePathStr, sizeof(decoder->OverridePathStr), defaultOverridePath, sizeof(decoder->OverridePathStr));
-		strncpy_s(decoder->LUTsPathStr, sizeof(decoder->LUTsPathStr), defaultLUTpath, sizeof(decoder->LUTsPathStr));
-		strncpy_s(decoder->UserDBPathStr, sizeof(decoder->UserDBPathStr), DbNameStr, sizeof(decoder->UserDBPathStr));
+		strncpy(decoder->OverridePathStr, defaultOverridePath, sizeof(decoder->OverridePathStr));
+		strncpy(decoder->LUTsPathStr, defaultLUTpath, sizeof(decoder->LUTsPathStr));
+		strncpy(decoder->UserDBPathStr, DbNameStr, sizeof(decoder->UserDBPathStr));
+		//strncpy_s(decoder->OverridePathStr, sizeof(decoder->OverridePathStr), defaultOverridePath, sizeof(decoder->OverridePathStr));
+		//strncpy_s(decoder->LUTsPathStr, sizeof(decoder->LUTsPathStr), defaultLUTpath, sizeof(decoder->LUTsPathStr));
+		//strncpy_s(decoder->UserDBPathStr, sizeof(decoder->UserDBPathStr), DbNameStr, sizeof(decoder->UserDBPathStr));
 
 
 #elif __APPLE_REMOVE__
@@ -645,12 +650,12 @@ void InitLUTPaths(DECODER *decoder)
 void InitLUTPathsEnc(ENCODER *encoder)
 {
 	if(encoder && encoder->LUTsPathStr[0] == 0)
-#ifdef _WINDOWS
+#if _WINDOWS
 	{
 		USES_CONVERSION;
 
-		TCHAR defaultLUTpath[260] = "C:\\Program Files\\Common Files\\CineForm\\LUTs";
-		TCHAR defaultOverridePath[260] = "";
+		TCHAR defaultLUTpath[260] = "?";
+		TCHAR defaultOverridePath[260] = "?";
 		char DbNameStr[64] = "db";
 
 		CSettings cfg;
@@ -664,8 +669,8 @@ void InitLUTPathsEnc(ENCODER *encoder)
 
 			CComBSTR path(cfg.GetString(_T("DBPath"), _T("db")));
 			pDBPathStr = OLE2T(path);
-			//strcpy(DbNameStr, pDBPathStr);
-			strcpy_s(DbNameStr, sizeof(DbNameStr), pDBPathStr);
+			strcpy(DbNameStr, pDBPathStr);
+			//strcpy_s(DbNameStr, sizeof(DbNameStr), pDBPathStr);
 
 			CComBSTR path2(cfg.GetString(_T("LUTPath"), _T("NONE")));
 			pLUTPathStr = OLE2T(path2);
@@ -682,7 +687,8 @@ void InitLUTPathsEnc(ENCODER *encoder)
 
 				if(n = GetEnvironmentVariable("PUBLIC",PublicPath,79)) // Vista and Win7
 				{
-					_stprintf_s(defaultLUTpath, sizeof(defaultLUTpath), _T("%s\\%s"), PublicPath, _T("CineForm\\LUTs")); //Vista & 7 default
+					_stprintf(defaultLUTpath, _T("%s\\%s"), PublicPath, _T("CineForm\\LUTs")); //Vista & 7 default
+					//_stprintf_s(defaultLUTpath, sizeof(defaultLUTpath), _T("%s\\%s"), PublicPath, _T("CineForm\\LUTs")); //Vista & 7 default
 				}
 				else
 				{
@@ -692,10 +698,11 @@ void InitLUTPathsEnc(ENCODER *encoder)
 						LPCTSTR pCommonPathStr = OLE2T(commonpath);
 						if(0 == strcmp(pCommonPathStr, "NONE"))
 						{
-							commonpath = cfg.GetString(_T("CommonFilesDir"), _T("C:\\Program Files\\Common Files"));
+							commonpath = cfg.GetString(_T("CommonFilesDir"), _T("?"));
 							pCommonPathStr = OLE2T(commonpath);
 						}
-						_stprintf_s(defaultLUTpath, sizeof(defaultLUTpath), _T("%s\\%s"), pCommonPathStr, _T("CineForm\\LUTs"));
+						_stprintf(defaultLUTpath, _T("%s\\%s"), pCommonPathStr, _T("CineForm\\LUTs"));
+						//_stprintf_s(defaultLUTpath, sizeof(defaultLUTpath), _T("%s\\%s"), pCommonPathStr, _T("CineForm\\LUTs"));
 
 						cfg.Close();
 					}
@@ -703,19 +710,19 @@ void InitLUTPathsEnc(ENCODER *encoder)
 			}
 			else
 			{
-				//strcpy(defaultLUTpath, pLUTPathStr);
-				strcpy_s(defaultLUTpath, sizeof(defaultLUTpath), pLUTPathStr);
-				//strcpy(defaultOverridePath, pOverridePathStr);
-				strcpy_s(defaultOverridePath, sizeof(defaultOverridePath), pOverridePathStr);
+				strcpy(defaultLUTpath, pLUTPathStr);
+				//strcpy_s(defaultLUTpath, sizeof(defaultLUTpath), pLUTPathStr);
+				strcpy(defaultOverridePath, pOverridePathStr);
+				//strcpy_s(defaultOverridePath, sizeof(defaultOverridePath), pOverridePathStr);
 			}
 		}
 
-		strncpy_s(encoder->OverridePathStr, sizeof(encoder->OverridePathStr), defaultOverridePath, sizeof(encoder->OverridePathStr));
-		strncpy_s(encoder->LUTsPathStr, sizeof(encoder->LUTsPathStr), defaultLUTpath, sizeof(encoder->LUTsPathStr));
-		strncpy_s(encoder->UserDBPathStr, sizeof(encoder->UserDBPathStr), DbNameStr, sizeof(encoder->UserDBPathStr));
-		//strncpy(encoder->OverridePathStr, defaultOverridePath, sizeof(encoder->OverridePathStr));
-		//strncpy(encoder->LUTsPathStr, defaultLUTpath, sizeof(encoder->LUTsPathStr));
-		//strncpy(encoder->UserDBPathStr, DbNameStr, sizeof(encoder->UserDBPathStr));
+		//strncpy_s(encoder->OverridePathStr, sizeof(encoder->OverridePathStr), defaultOverridePath, sizeof(encoder->OverridePathStr));
+		//strncpy_s(encoder->LUTsPathStr, sizeof(encoder->LUTsPathStr), defaultLUTpath, sizeof(encoder->LUTsPathStr));
+		//strncpy_s(encoder->UserDBPathStr, sizeof(encoder->UserDBPathStr), DbNameStr, sizeof(encoder->UserDBPathStr));
+		strncpy(encoder->OverridePathStr, defaultOverridePath, sizeof(encoder->OverridePathStr));
+		strncpy(encoder->LUTsPathStr, defaultLUTpath, sizeof(encoder->LUTsPathStr));
+		strncpy(encoder->UserDBPathStr, DbNameStr, sizeof(encoder->UserDBPathStr));
 		
 	}
 #elif __APPLE_REMOVE__
@@ -1160,7 +1167,7 @@ bool LoadDiskMetadata(DECODER *decoder, int priority, char *filename)
 			FILE *fp;
 			int first = 1;
 			int retry = 0;
-#ifdef _WINDOWS
+#ifdef CRT_S
 			int openfail = 0;
 #endif
 			size = &decoder->DataBasesSize[priority];
@@ -1169,7 +1176,7 @@ bool LoadDiskMetadata(DECODER *decoder, int priority, char *filename)
 			{
 				int err = 0;
 				retry = 0;
-#ifdef _WINDOWS
+#ifdef CRT_S
 				openfail = 0;
 				err = fopen_s(&fp, filename, "rb");
 #else
@@ -1244,7 +1251,7 @@ bool LoadDiskMetadata(DECODER *decoder, int priority, char *filename)
                     if (theErr==ENOENT) {
                         // file does not exist so just bail
                         *size = 0;
-#ifdef _WINDOWS
+#ifdef CRT_S
                         openfail = 1;
 #endif
                         retry = 0;
@@ -1252,7 +1259,7 @@ bool LoadDiskMetadata(DECODER *decoder, int priority, char *filename)
 //                      fprintf(stderr,"no %d\n",theErr);
                         if(decoder->hasFileDB[priority] == 1)
                         {
-#ifdef _WINDOWS
+#ifdef CRT_S
                             openfail = 1;
 #endif
                             if(first)
@@ -1354,7 +1361,7 @@ void OverrideCFHDDATA(DECODER *decoder, unsigned char *lpCurrentBuffer, int nWor
             decoder->OverlaySafe[0] = 0.075f/2.0f;
             decoder->OverlaySafe[1] = 0.1f/2.0f;
 
-#ifdef _WINDOWS
+#ifdef CRT_S
 			strcpy_s(decoder->MDPdefault.font, sizeof(decoder->MDPdefault.font), "Courier New Bold");
 #else
 			strcpy(decoder->MDPdefault.font, "Courier New Bold");
@@ -1573,7 +1580,7 @@ void OverrideCFHDDATA(DECODER *decoder, unsigned char *lpCurrentBuffer, int nWor
 			//if(lastGUID.Data1 || lastGUID.Data2 || lastGUID.Data3)
 			{
 				char TextGUID[64];
-#ifdef _WINDOWS
+#ifdef CRT_S
 				sprintf_s(TextGUID, sizeof(TextGUID), 
 #else
 				sprintf(TextGUID, 
@@ -1638,7 +1645,7 @@ void OverrideCFHDDATA(DECODER *decoder, unsigned char *lpCurrentBuffer, int nWor
 			if(LoadDiskMetadata(decoder, METADATA_PRIORITY_BASE_DBDIR, filename))
 				checkdiskinfo = 1;
 			*/			
-#ifdef _WINDOWS
+#ifdef CRT_S
 			sprintf_s(filename, sizeof(filename), "%s/override.colr", decoder->OverridePathStr);
 #else
 			sprintf(filename, "%s/override.colr", decoder->OverridePathStr);
@@ -1698,7 +1705,7 @@ void OverrideCFHDDATA(DECODER *decoder, unsigned char *lpCurrentBuffer, int nWor
 					case METADATA_PRIORITY_DATABASE: //file database
                     case METADATA_PRIORITY_DATABASE_1: //file database channel 2 (stereo Right - delta)
                     case METADATA_PRIORITY_DATABASE_2: //file database channel 2 (stereo Right - delta)
-#ifdef _WINDOWS
+#ifdef CRT_S
 						strcpy_s(ext, sizeof(ext), "colr");
 						if (type == METADATA_PRIORITY_DATABASE_1)
 							strcpy_s(ext, sizeof(ext), "col1");
@@ -1714,7 +1721,7 @@ void OverrideCFHDDATA(DECODER *decoder, unsigned char *lpCurrentBuffer, int nWor
 
 						if(lastGUID.Data1 || lastGUID.Data2 || lastGUID.Data3)
 						{
-#ifdef _WINDOWS
+#ifdef CRT_S
 							sprintf_s(filenameGUID, sizeof(filenameGUID), 
 #else
 							sprintf(filenameGUID, 
@@ -1741,7 +1748,7 @@ void OverrideCFHDDATA(DECODER *decoder, unsigned char *lpCurrentBuffer, int nWor
 					case METADATA_PRIORITY_OVERRIDE: // preset_override an colr file for all clips.
                     case METADATA_PRIORITY_OVERRIDE_1: // preset_override an col1 file for all clips.
                     case METADATA_PRIORITY_OVERRIDE_2: // preset_override an col2 file for all clips.
-#ifdef _WINDOWS
+#ifdef CRT_S
 						strcpy_s(ext, sizeof(ext), "colr");
 						if(type == METADATA_PRIORITY_OVERRIDE_1)
 							strcpy_s(ext, sizeof(ext), "col1");
@@ -1757,7 +1764,7 @@ void OverrideCFHDDATA(DECODER *decoder, unsigned char *lpCurrentBuffer, int nWor
 
                         buffer = &decoder->DataBases[type];
 
-#ifdef _WINDOWS
+#ifdef CRT_S
 						sprintf_s(filenameGUID, sizeof(filenameGUID), "%s/override.%s", decoder->OverridePathStr, ext);
 #else
 						sprintf(filenameGUID, "%s/override.%s", decoder->OverridePathStr, ext);
@@ -2140,7 +2147,7 @@ void OverrideCFHDDATAUsingParent(struct decoder *decoder, struct decoder *parent
             decoder->OverlaySafe[0] = 0.075f/2.0f;
             decoder->OverlaySafe[1] = 0.1f/2.0f;
 
-#ifdef _WINDOWS
+#ifdef CRT_S
 			strcpy_s(decoder->MDPdefault.font, sizeof(decoder->MDPdefault.font), "Courier New Bold");
 #else
 			strcpy(decoder->MDPdefault.font, "Courier New Bold");

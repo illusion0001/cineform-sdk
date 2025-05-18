@@ -458,7 +458,7 @@ bool CSampleMetadata::GetClipDatabase()
 		//GetLUTPath(PathStr);
 		bool checkdiskinfo = false;
 
-#ifdef _WINDOWS
+#ifdef CRT_S
 		sprintf_s(filenameGUID, sizeof(filenameGUID), 
 #else	
 		sprintf(filenameGUID,
@@ -508,7 +508,7 @@ bool CSampleMetadata::GetClipDatabase()
 			FILE *fp;
 			int err = 0;
 
-#ifdef _WINDOWS
+#ifdef CRT_S
 			err = fopen_s(&fp, filenameGUID, "rb");
 #else
 			fp = fopen(filenameGUID, "rb");
@@ -531,7 +531,7 @@ bool CSampleMetadata::GetClipDatabase()
 				if(m_databaseData)
 				{
 					fseek (fp, 0, SEEK_SET);
-#ifdef _WINDOWS
+#ifdef CRT_S
 					len = (uint32_t)fread_s(m_databaseData, len, 1, len, fp);
 #else
 					len = (uint32_t)fread(m_databaseData,1,len,fp);
@@ -1798,7 +1798,7 @@ void CSampleMetadata::MakeLeftRightDelta(uint32_t Tag, unsigned int typesizebyte
 		case TAG_FRAME_DIFF_ZOOM:
 			for (i = 0; i < item_count; i++)
 			{
-				if(fldata && *fldata)
+				if(*fldata)
 					*fddata++ /= 1.0;
 			}
 			break;
